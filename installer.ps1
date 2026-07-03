@@ -91,7 +91,8 @@ try {
 Write-Host ''
 Write-Host 'Downloading the latest mod file from GitHub...'
 $tmp = Join-Path $env:TEMP 'gogurt-mtg-table.json'
-Invoke-WebRequest -Uri "$RepoRaw/2293586471.json" -OutFile $tmp -UseBasicParsing
+# ?nocache busts GitHub's raw CDN cache (5 min) so updates are picked up instantly
+Invoke-WebRequest -Uri "$RepoRaw/2293586471.json?nocache=$(Get-Random)" -OutFile $tmp -UseBasicParsing
 $json = [IO.File]::ReadAllText($tmp)
 Remove-Item $tmp -Force
 
@@ -102,7 +103,7 @@ Write-Host "Installed mod file: $modPath" -ForegroundColor Green
 
 # Thumbnail (optional - skip silently if missing from the repo)
 try {
-    Invoke-WebRequest -Uri "$RepoRaw/2293586471.png" -OutFile $pngPath -UseBasicParsing
+    Invoke-WebRequest -Uri "$RepoRaw/2293586471.png?nocache=$(Get-Random)" -OutFile $pngPath -UseBasicParsing
     Write-Host 'Installed thumbnail.' -ForegroundColor Green
 } catch { }
 
