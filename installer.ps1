@@ -17,41 +17,61 @@ Write-Host '=============================================' -ForegroundColor Cyan
 Write-Host ''
 
 # ---- Locate the TTS Workshop folder -------------------------------
-$docs = [Environment]::GetFolderPath('MyDocuments')
-$workshop = Join-Path $docs 'My Games\Tabletop Simulator\Mods\Workshop'
-if (-not (Test-Path $workshop)) {
-    Write-Host 'Could not find the Tabletop Simulator Workshop folder at the default location:' -ForegroundColor Yellow
-    Write-Host "  $workshop" -ForegroundColor Yellow
-    $workshop = $null
+# TTS's "Mod Save Location" setting stores mods either in Documents (default)
+# or in Game Data (AppData\LocalLow). Fully custom locations are possible too.
+$docsWorkshop = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'My Games\Tabletop Simulator\Mods\Workshop'
+$gameDataWorkshop = Join-Path $env:USERPROFILE 'AppData\LocalLow\Berserk Games\Tabletop Simulator\Mods\Workshop'
 
-    # TTS's own log files record the mods path it actually uses, so a custom
-    # (relocated) data folder can usually be detected from there.
-    $logDir = Join-Path $env:USERPROFILE 'AppData\LocalLow\Berserk Games\Tabletop Simulator'
-    foreach ($log in @('Player.log', 'Player-prev.log')) {
-        if ($workshop) { break }
-        $logPath = Join-Path $logDir $log
-        if (-not (Test-Path $logPath)) { continue }
-        $m = Select-String -Path $logPath -Pattern '([A-Za-z]:[\\/][^"<>|:*?]*?[\\/]Mods)[\\/]' | Select-Object -First 1
-        if ($m) {
-            $modsPath = $m.Matches[0].Groups[1].Value -replace '[\\/]+', '\'
-            $candidate = Join-Path $modsPath 'Workshop'
-            if (Test-Path $candidate) {
-                Write-Host ''
-                Write-Host "Found a mods folder in Tabletop Simulator's log files:" -ForegroundColor Green
-                Write-Host "  $candidate" -ForegroundColor Green
-                $ans = Read-Host 'Install there? (y/n)'
-                if ($ans -match '^[Yy]') { $workshop = $candidate }
-            }
-        }
+# TTS's own log files record the mods path actually in use - the most
+# reliable signal for both the Documents/Game Data setting and custom paths.
+$logDetected = $null
+$logDir = Join-Path $env:USERPROFILE 'AppData\LocalLow\Berserk Games\Tabletop Simulator'
+foreach ($log in @('Player.log', 'Player-prev.log')) {
+    if ($logDetected) { break }
+    $logPath = Join-Path $logDir $log
+    if (-not (Test-Path $logPath)) { continue }
+    $m = Select-String -Path $logPath -Pattern '([A-Za-z]:[\\/][^"<>|:*?]*?[\\/]Mods)[\\/]' | Select-Object -First 1
+    if ($m) {
+        $candidate = Join-Path ($m.Matches[0].Groups[1].Value -replace '[\\/]+', '\') 'Workshop'
+        if (Test-Path $candidate) { $logDetected = $candidate }
     }
+}
 
-    if (-not $workshop) {
+$workshop = $null
+
+# 1. An existing install wins - always update it where it already lives.
+foreach ($c in @($logDetected, $docsWorkshop, $gameDataWorkshop)) {
+    if ($c -and (Test-Path (Join-Path $c "$FileBase.json"))) { $workshop = $c; break }
+}
+
+# 2. Otherwise trust the location TTS's logs say it is using.
+if (-not $workshop -and $logDetected) { $workshop = $logDetected }
+
+# 3. Otherwise use whichever standard location exists; ask if both do.
+if (-not $workshop) {
+    $existing = @( @($docsWorkshop, $gameDataWorkshop) | Where-Object { Test-Path $_ } )
+    if ($existing.Count -eq 1) {
+        $workshop = $existing[0]
+    } elseif ($existing.Count -ge 2) {
+        Write-Host 'TTS can store mods in Documents or in Game Data, and both folders exist'
+        Write-Host 'on this PC. Check Settings > Game > Mod Save Location in TTS if unsure.'
         Write-Host ''
-        Write-Host 'If you moved your TTS data to a custom location, paste your Mods\Workshop'
-        Write-Host 'folder path below. Otherwise, make sure Tabletop Simulator has been run at'
-        Write-Host 'least once, then run this installer again.'
+        Write-Host "  [1] Documents - $docsWorkshop"
+        Write-Host "  [2] Game Data - $gameDataWorkshop"
         Write-Host ''
+        $choice = Read-Host 'Where should the mod be installed? (1/2)'
+        if ($choice -eq '2') { $workshop = $gameDataWorkshop } else { $workshop = $docsWorkshop }
     }
+}
+
+# 4. Nothing found anywhere - ask for a custom path.
+if (-not $workshop) {
+    Write-Host 'Could not find a Tabletop Simulator Workshop folder on this PC.' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host 'If you moved your TTS data to a custom location, paste your Mods\Workshop'
+    Write-Host 'folder path below. Otherwise, make sure Tabletop Simulator has been run at'
+    Write-Host 'least once, then run this installer again.'
+    Write-Host ''
     while (-not $workshop) {
         $custom = Read-Host 'Paste your Mods\Workshop folder path (or press Enter to cancel)'
         $custom = $custom.Trim().Trim('"')
@@ -65,8 +85,9 @@ if (-not (Test-Path $workshop)) {
             Write-Host 'That folder does not exist or is not a Workshop folder - try again.' -ForegroundColor Yellow
         }
     }
-    Write-Host "Using: $workshop" -ForegroundColor Green
 }
+
+Write-Host "Installing to: $workshop" -ForegroundColor Green
 
 $modPath = Join-Path $workshop "$FileBase.json"
 $pngPath = Join-Path $workshop "$FileBase.png"
