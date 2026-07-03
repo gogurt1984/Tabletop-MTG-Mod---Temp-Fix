@@ -128,6 +128,29 @@ export default {
       return response;
     }
 
+    // ── Route: Proxy the Moxfield deck API ─────────────────────────────────
+    // Moxfield's API sits behind bot protection that rejects Unity/TTS
+    // clients outright. Requests from the worker (with browser-like headers)
+    // have a better chance, and failures still come back as clean HTTP
+    // errors the mod can handle gracefully.
+    if (url.pathname.startsWith("/moxfield/")) {
+      const moxPath = url.pathname.replace(/^\/moxfield/, "");
+      const moxResp = await fetch("https://api2.moxfield.com" + moxPath + url.search, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "Accept": "application/json"
+        }
+      });
+      const body = await moxResp.text();
+      return new Response(body, {
+        status: moxResp.status,
+        headers: {
+          "Content-Type": moxResp.headers.get("Content-Type") || "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+
     // ── Route 3: Proxy importer.rikrassen.xyz backend ─────────────────────
     // TTS/Unity Player can't make SSL connections to importer.rikrassen.xyz
     // for the same reason it can't reach Scryfall — Unity's HTTP stack blocks
