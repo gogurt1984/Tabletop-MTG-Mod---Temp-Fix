@@ -6,7 +6,7 @@
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$RepoRaw  = 'https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix/main'
+$RepoRaw  = 'https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG---Gogurts-DIY-Table/main'
 $ModName  = "Gogurt's 6 Player MTG Table"
 $FileBase = 'GogurtsMTGTable'
 
@@ -101,7 +101,7 @@ if ($mode -eq 'update') {
 if (-not $workerHost) {
     Write-Host ''
     Write-Host 'You need a (free) Cloudflare Worker running the proxy script.'
-    Write-Host 'See the README for setup: https://github.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix'
+    Write-Host 'See the README for setup: https://github.com/gogurt1984/Tabletop-MTG---Gogurts-DIY-Table'
     Write-Host ''
     while (-not $workerHost) {
         $raw = Read-Host 'Paste your worker URL (e.g. https://my-proxy.username.workers.dev)'

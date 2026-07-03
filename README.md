@@ -63,7 +63,7 @@ Scryfall traffic from this table through your own free Cloudflare Worker, which:
 
 ## Step 3 — Run the installer
 
-1. Download [`Install.zip`](https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix/main/Install.zip) (clicking the link downloads it).
+1. Download [`Install.zip`](https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG---Gogurts-DIY-Table/main/Install.zip) (clicking the link downloads it).
 2. Open the zip and double-click `Install.bat`. (Windows SmartScreen may warn about an unrecognized app — click **More info** → **Run anyway**.)
 3. When prompted, paste your Worker address from Step 2 and press Enter.
 
