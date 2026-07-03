@@ -16,6 +16,18 @@ Write-Host "  $ModName - Installer" -ForegroundColor Cyan
 Write-Host '=============================================' -ForegroundColor Cyan
 Write-Host ''
 
+# Single-keypress yes/no: the first key pressed is submitted; anything that
+# isn't y or n re-asks on a new line.
+function Read-YesNo([string]$prompt) {
+    while ($true) {
+        Write-Host "$prompt " -NoNewline
+        $key = [Console]::ReadKey($true)
+        Write-Host $key.KeyChar
+        if ($key.KeyChar -ieq 'y') { return $true }
+        if ($key.KeyChar -ieq 'n') { return $false }
+    }
+}
+
 # ---- Locate the TTS Workshop folder -------------------------------
 # TTS's "Mod Save Location" setting (Settings > Game) stores mods either in
 # Documents (Location=0, default) or in the Steam game folder itself
@@ -166,11 +178,10 @@ if ($mode -eq 'update') {
     }
     if ($detected) {
         Write-Host "Found your existing worker URL: $detected" -ForegroundColor Green
-        $ans = Read-Host 'Is this correct? (y/n)'
-        if ($ans -match '^[Nn]') {
-            Write-Host 'OK - enter the new worker URL below.'
-        } else {
+        if (Read-YesNo 'Is this correct? (y/n)') {
             $workerHost = $detected
+        } else {
+            Write-Host 'OK - enter the new worker URL below.'
         }
     } else {
         Write-Host 'Could not detect the worker URL in your existing install.' -ForegroundColor Yellow
