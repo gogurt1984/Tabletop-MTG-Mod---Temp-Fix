@@ -64,6 +64,12 @@ export default {
       body = body.split("https://cards.scryfall.io/").join(`${url.origin}/img/`);
       body = body.split("https:\\/\\/cards.scryfall.io\\/").join(`${url.origin.replace(/\//g, "\\/")}\\/img\\/`);
 
+      // Also rewrite API self-links (uri, rulings_uri, prints_search_uri, all_parts,
+      // etc.) - mod scripts fetch these fields straight out of responses, e.g. for
+      // rulings chat commands and emblem/token imports.
+      body = body.split("https://api.scryfall.com/").join(`${url.origin}/api/`);
+      body = body.split("https:\\/\\/api.scryfall.com\\/").join(`${url.origin.replace(/\//g, "\\/")}\\/api\\/`);
+
       const response = new Response(body, {
         status: apiResp.status,
         headers: {
