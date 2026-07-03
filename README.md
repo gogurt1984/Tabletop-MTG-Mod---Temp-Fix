@@ -31,7 +31,7 @@ Scryfall traffic from this table through your own free Cloudflare Worker, which:
 
 | File | Purpose |
 |---|---|
-| `Install.bat` | **The installer.** Double-click it to install or update the mod. It always fetches the latest version from this GitHub repo. |
+| `Install.zip` / `Install.bat` | **The installer.** Double-click `Install.bat` to install or update the mod. It always fetches the latest version from this GitHub repo. The zip is just a download-friendly wrapper for the same file. |
 | `installer.ps1` | The PowerShell script `Install.bat` runs. You don't need to touch it. |
 | `scryfall-proxy-worker.js` | The Cloudflare Worker code. You'll deploy this to your own free Cloudflare account (Steps 1–2). |
 | `2293586471.json` | The TTS save file the installer downloads and patches. Only needed directly if you do a [manual install](#manual-install-without-the-installer). |
@@ -63,8 +63,8 @@ Scryfall traffic from this table through your own free Cloudflare Worker, which:
 
 ## Step 3 — Run the installer
 
-1. Download [`Install.bat`](https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix/main/Install.bat) (right-click → Save link as), or use the copy in this folder.
-2. Double-click it. (Windows SmartScreen may warn about an unrecognized app — click **More info** → **Run anyway**.)
+1. Download [`Install.zip`](https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix/main/Install.zip) (clicking the link downloads it).
+2. Open the zip and double-click `Install.bat`. (Windows SmartScreen may warn about an unrecognized app — click **More info** → **Run anyway**.)
 3. Choose **Fresh install**.
 4. When prompted, paste your Worker address from Step 2 and press Enter.
 
