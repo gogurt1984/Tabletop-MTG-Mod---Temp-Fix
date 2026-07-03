@@ -1,4 +1,6 @@
-# TTS MTG Table — Scryfall Image Proxy Setup Guide
+# Gogurt's 6 Player MTG Table — Setup Guide
+
+A fixed version of the [MTG EDH 6-player (π)](https://steamcommunity.com/sharedfiles/filedetails/?id=2293586471) Tabletop Simulator table that works around Scryfall's block on Unity Player by routing all card images and data through your own free Cloudflare Worker.
 
 Free, ~10–15 minutes, no credit card required.
 
@@ -8,8 +10,9 @@ Free, ~10–15 minutes, no credit card required.
 - [What's in this folder](#whats-in-this-folder)
 - [Step 1 — Create a free Cloudflare account](#step-1--create-a-free-cloudflare-account)
 - [Step 2 — Deploy the Worker](#step-2--deploy-the-worker)
-- [Step 3 — Point the save file at your Worker](#step-3--point-the-save-file-at-your-worker-one-find-and-replace)
-- [Step 4 — Install the save in Tabletop Simulator](#step-4--install-the-save-in-tabletop-simulator)
+- [Step 3 — Run the installer](#step-3--run-the-installer)
+- [Updating to the latest version](#updating-to-the-latest-version)
+- [Manual install (without the installer)](#manual-install-without-the-installer)
 - [Verifying it worked](#verifying-it-worked)
 - [How it works, briefly](#how-it-works-briefly)
 - [Limitations / things to know](#limitations--things-to-know)
@@ -28,8 +31,11 @@ Scryfall traffic from this table through your own free Cloudflare Worker, which:
 
 | File | Purpose |
 |---|---|
-| `scryfall-proxy-worker.js` | The Cloudflare Worker code. You'll deploy this to your own free Cloudflare account. |
-| `2293586471.json` | The TTS save file. It contains one placeholder, `YOUR_WORKER_URL_HERE`, that you'll replace with your own Worker's address. |
+| `Install.bat` | **The installer.** Double-click it to install or update the mod. It always fetches the latest version from this GitHub repo. |
+| `installer.ps1` | The PowerShell script `Install.bat` runs. You don't need to touch it. |
+| `scryfall-proxy-worker.js` | The Cloudflare Worker code. You'll deploy this to your own free Cloudflare account (Steps 1–2). |
+| `2293586471.json` | The TTS save file the installer downloads and patches. Only needed directly if you do a [manual install](#manual-install-without-the-installer). |
+| `2293586471.png` | The mod thumbnail. |
 | `README.md` | This guide. |
 
 ## Step 1 — Create a free Cloudflare account
@@ -51,32 +57,43 @@ Scryfall traffic from this table through your own free Cloudflare Worker, which:
    <your-worker-name>.<your-subdomain>.workers.dev
    ```
 
-   You can find the exact address on the Worker's overview page in the Cloudflare dashboard. You don't need the `https://` part for the next step.
+   You can find the exact address on the Worker's overview page in the Cloudflare dashboard.
 
 > That's it for Cloudflare — no KV namespace, no extra bindings, and no payment info required. The Worker uses Cloudflare's free built-in edge cache.
 
-## Step 3 — Point the save file at your Worker (one find-and-replace)
+## Step 3 — Run the installer
+
+1. Download [`Install.bat`](https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix/main/Install.bat) (right-click → Save link as), or use the copy in this folder.
+2. Double-click it. (Windows SmartScreen may warn about an unrecognized app — click **More info** → **Run anyway**.)
+3. Choose **Fresh install**.
+4. When prompted, paste your Worker address from Step 2 and press Enter.
+
+The installer downloads the latest save file from this repo, patches in your Worker URL, installs it into your TTS Workshop folder, and registers it with Tabletop Simulator — the same way a Steam Workshop subscription would.
+
+Then in Tabletop Simulator: **Create → Games → Workshop → "Gogurt's 6 Player MTG Table"**.
+
+## Updating to the latest version
+
+Run `Install.bat` again and choose **Update**. It pulls the latest save file from this repo and keeps the Worker URL from your existing install — no re-pasting needed.
+
+## Manual install (without the installer)
+
+<details>
+<summary>Click to expand if you'd rather do it by hand</summary>
 
 1. Open `2293586471.json` in **Notepad**.
 2. Press **Ctrl+H** to open Find and Replace.
 3. In **Find**, type: `YOUR_WORKER_URL_HERE`
-4. In **Replace**, type your Worker's address from Step 2 (e.g. `scryfall-proxy.yourname.workers.dev`).
-5. Click **Replace All**.
-6. Save the file (Ctrl+S).
+4. In **Replace**, type your Worker's address (e.g. `scryfall-proxy.yourname.workers.dev` — no `https://`).
+5. Click **Replace All** and save the file.
+6. Subscribe to the original mod on Steam: [steamcommunity.com/sharedfiles/filedetails/?id=2293586471](https://steamcommunity.com/sharedfiles/filedetails/?id=2293586471). Launch TTS once and let it finish downloading — this generates `Documents\My Games\Tabletop Simulator\Mods\Workshop\2293586471.json` and adds a matching entry to `WorkshopFileInfos.json` in that same folder.
+7. Close Tabletop Simulator.
+8. Replace the downloaded `2293586471.json` with your edited copy (same filename — do not rename it, so it matches the `Directory` entry Steam created in `WorkshopFileInfos.json`).
+9. Launch Tabletop Simulator and load the mod from your Workshop mods list.
 
-That's the only edit needed — `YOUR_WORKER_URL_HERE` appears throughout the file as a single placeholder, and Replace All swaps every instance in one go.
+If the mod ever fails to appear in your Workshop list, or TTS shows an error like *"Error loading Workshop games"*, open `WorkshopFileInfos.json` in Notepad and confirm it has an entry whose `Directory` points at your mod's `.json` file with a `Name` field filled in. If that entry is missing, malformed, or points at the wrong file, remove the bad entry and re-launch TTS.
 
-## Step 4 — Install the save in Tabletop Simulator
-
-> **Subscribe to the original Workshop item first.** This file is a modified version of the existing Steam Workshop mod [MTG EDH 6-player (π)](https://steamcommunity.com/sharedfiles/filedetails/?id=2293586471) (Workshop ID `2293586471`). Subscribe to that item in Steam first — this lets TTS register the mod properly and creates the correct entry in `WorkshopFileInfos.json` (the file TTS uses to know which save belongs to which Workshop item and what to call it in your mods list). Skipping this step and just dropping the JSON in on its own can cause TTS to either not show the mod at all, or show it with a broken/missing name.
-
-1. Subscribe to the original mod on Steam: [steamcommunity.com/sharedfiles/filedetails/?id=2293586471](https://steamcommunity.com/sharedfiles/filedetails/?id=2293586471). Launch TTS once and let it finish downloading the mod — this generates `Documents\My Games\Tabletop Simulator\Mods\Workshop\2293586471.json` and adds a matching entry to `WorkshopFileInfos.json` in that same folder.
-2. Close Tabletop Simulator.
-3. Replace that downloaded `2293586471.json` with the edited copy from this folder (same filename — **2293586471.json** — so it matches the `Directory` entry Steam already created for it in `WorkshopFileInfos.json`). Do not rename the file.
-4. Launch Tabletop Simulator and load the mod from your Workshop mods list, same as before.
-5. Card images should now load through your own Worker instead of failing or hitting Scryfall directly.
-
-If the mod ever fails to appear in your Workshop list, or TTS shows an error like *"Error loading Workshop games"*, open `WorkshopFileInfos.json` in Notepad and confirm it has an entry whose `Directory` points at your `2293586471.json` file with a `Name` field filled in (e.g. `"MTG 6 player table - scripted"`). If that entry is missing, malformed, or points at the wrong file, remove the bad entry and re-launch TTS, or re-subscribe to the original Workshop item to regenerate it cleanly.
+</details>
 
 ## Verifying it worked
 
@@ -98,6 +115,7 @@ This should return JSON card data for Lightning Bolt, with any image URLs inside
 
 - `/api/*` on your Worker proxies requests to `api.scryfall.com`, caches the JSON response at Cloudflare's edge, and rewrites any embedded Scryfall image URLs in the response so they point back at your Worker instead of Scryfall's CDN.
 - `/img/*` proxies and caches actual card images from `cards.scryfall.io`, with a fallback to a smaller image size if the originally requested size isn't available yet (this happens occasionally for newly added cards), and a transparent placeholder image as a last resort so a missing image never produces a hard error in TTS.
+- `/importer/*` proxies the deck/token import backend (`importer.rikrassen.xyz`), which Unity Player also can't reach directly — this is what makes the Card Importer's deck build and token import buttons work.
 - Anything else returns a harmless blank image, so any unrelated leftover URLs in a mod fail safely instead of erroring.
 
 ## Limitations / things to know
