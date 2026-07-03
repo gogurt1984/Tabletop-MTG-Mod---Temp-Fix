@@ -33,14 +33,11 @@ $pngPath = Join-Path $workshop "$FileBase.png"
 $alreadyInstalled = Test-Path $modPath
 
 # ---- Choose install mode -------------------------------------------
+# Existing install -> update it in place, keeping the worker URL.
+# No install found -> fresh install, which prompts for a worker URL.
 if ($alreadyInstalled) {
-    Write-Host 'An existing install was found.' -ForegroundColor Green
-    Write-Host ''
-    Write-Host '  [1] Update      - pull the latest version, keep your worker URL'
-    Write-Host '  [2] Fresh install - pull the latest version, enter a worker URL'
-    Write-Host ''
-    $choice = Read-Host 'Choose an option (1/2)'
-    $mode = if ($choice -eq '2') { 'fresh' } else { 'update' }
+    Write-Host 'Existing install found - updating it to the latest version.' -ForegroundColor Green
+    $mode = 'update'
 } else {
     Write-Host 'No existing install found - doing a fresh install.' -ForegroundColor Green
     $mode = 'fresh'

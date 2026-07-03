@@ -65,8 +65,7 @@ Scryfall traffic from this table through your own free Cloudflare Worker, which:
 
 1. Download [`Install.zip`](https://raw.githubusercontent.com/gogurt1984/Tabletop-MTG-Mod---Temp-Fix/main/Install.zip) (clicking the link downloads it).
 2. Open the zip and double-click `Install.bat`. (Windows SmartScreen may warn about an unrecognized app — click **More info** → **Run anyway**.)
-3. Choose **Fresh install**.
-4. When prompted, paste your Worker address from Step 2 and press Enter.
+3. When prompted, paste your Worker address from Step 2 and press Enter.
 
 The installer downloads the latest save file from this repo, patches in your Worker URL, installs it into your TTS Workshop folder, and registers it with Tabletop Simulator — the same way a Steam Workshop subscription would.
 
@@ -74,7 +73,7 @@ Then in Tabletop Simulator: **Create → Games → Workshop → "Gogurt's 6 Play
 
 ## Updating to the latest version
 
-Run `Install.bat` again and choose **Update**. It pulls the latest save file from this repo and keeps the Worker URL from your existing install — no re-pasting needed.
+Run the same `Install.bat` again. It detects your existing install, pulls the latest save file from this repo, and keeps the Worker URL you already entered — no prompts, no re-pasting.
 
 ## Manual install (without the installer)
 
