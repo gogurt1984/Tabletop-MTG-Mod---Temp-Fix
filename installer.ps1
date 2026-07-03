@@ -136,6 +136,5 @@ if ($mode -eq 'update') {
 }
 Write-Host '=============================================' -ForegroundColor Cyan
 Write-Host ''
-Write-Host "In Tabletop Simulator: Create > Games > Workshop > `"$ModName`""
 Write-Host 'Run this installer again any time to grab the latest version.'
 Write-Host ''
