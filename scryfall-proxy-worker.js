@@ -122,6 +122,40 @@ export default {
       return response;
     }
 
+    // ── Route 3: Proxy importer.rikrassen.xyz backend ─────────────────────
+    // TTS/Unity Player can't make SSL connections to importer.rikrassen.xyz
+    // for the same reason it can't reach Scryfall — Unity's HTTP stack blocks
+    // certain domains. This route passes the request through the worker, which
+    // has no such restrictions.
+    if (url.pathname.startsWith("/importer")) {
+      const importerPath = url.pathname.replace(/^\/importer/, "") || "/";
+      const importerUrl = "https://importer.rikrassen.xyz" + importerPath + url.search;
+
+      const body = request.method !== "GET" && request.method !== "HEAD"
+        ? await request.arrayBuffer()
+        : undefined;
+
+      const importerResp = await fetch(importerUrl, {
+        method: request.method,
+        headers: {
+          "Content-Type": request.headers.get("Content-Type") || "application/json",
+          "Accept": request.headers.get("Accept") || "application/json",
+          "User-Agent": request.headers.get("User-Agent") || "TTSProxyWorker/1.0",
+          "X-Client-Version": request.headers.get("X-Client-Version") || ""
+        },
+        body
+      });
+
+      const respBody = await importerResp.arrayBuffer();
+      return new Response(respBody, {
+        status: importerResp.status,
+        headers: {
+          "Content-Type": importerResp.headers.get("Content-Type") || "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+
     if (url.pathname === "/") {
       return new Response(
         "Scryfall Proxy\n\nRoutes:\n  /api/<path>    Proxy + cache Scryfall API\n  /img/<path>    Proxy + cache Scryfall image CDN",
