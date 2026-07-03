@@ -154,17 +154,25 @@ if ($existingInstalls.Count -gt 0) {
 # ---- Get the worker URL --------------------------------------------
 $workerHost = $null
 if ($mode -eq 'update') {
-    # Reuse the worker URL from any existing install
+    # Reuse the worker URL from any existing install, after confirming it
+    $detected = $null
     foreach ($loc in $existingInstalls) {
         $existing = [IO.File]::ReadAllText((Join-Path $loc "$FileBase.json"))
         $m = [regex]::Match($existing, 'https://([^/"\\'']+)/img/')
         if ($m.Success -and $m.Groups[1].Value -ne 'YOUR_WORKER_URL_HERE') {
-            $workerHost = $m.Groups[1].Value
-            Write-Host "Using your existing worker URL: $workerHost" -ForegroundColor Green
+            $detected = $m.Groups[1].Value
             break
         }
     }
-    if (-not $workerHost) {
+    if ($detected) {
+        Write-Host "Found your existing worker URL: $detected" -ForegroundColor Green
+        $ans = Read-Host 'Is this correct? (y/n)'
+        if ($ans -match '^[Nn]') {
+            Write-Host 'OK - enter the new worker URL below.'
+        } else {
+            $workerHost = $detected
+        }
+    } else {
         Write-Host 'Could not detect the worker URL in your existing install.' -ForegroundColor Yellow
         $mode = 'fresh'
     }
