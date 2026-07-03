@@ -20,12 +20,28 @@ Write-Host ''
 $docs = [Environment]::GetFolderPath('MyDocuments')
 $workshop = Join-Path $docs 'My Games\Tabletop Simulator\Mods\Workshop'
 if (-not (Test-Path $workshop)) {
-    Write-Host "Could not find the Tabletop Simulator Workshop folder at:" -ForegroundColor Yellow
+    Write-Host 'Could not find the Tabletop Simulator Workshop folder at the default location:' -ForegroundColor Yellow
     Write-Host "  $workshop" -ForegroundColor Yellow
-    Write-Host "Make sure Tabletop Simulator has been run at least once." -ForegroundColor Yellow
-    $ans = Read-Host 'Create the folder anyway and continue? (y/n)'
-    if ($ans -notmatch '^[Yy]') { Write-Host 'Install cancelled.'; return }
-    New-Item -ItemType Directory -Force -Path $workshop | Out-Null
+    Write-Host ''
+    Write-Host 'If you moved your TTS data to a custom location, paste your Mods\Workshop'
+    Write-Host 'folder path below. Otherwise, make sure Tabletop Simulator has been run at'
+    Write-Host 'least once, then run this installer again.'
+    Write-Host ''
+    $workshop = $null
+    while (-not $workshop) {
+        $custom = Read-Host 'Paste your Mods\Workshop folder path (or press Enter to cancel)'
+        $custom = $custom.Trim().Trim('"')
+        if (-not $custom) { Write-Host 'Install cancelled.'; return }
+        if ((Test-Path $custom) -and (Split-Path $custom -Leaf) -eq 'Workshop') {
+            $workshop = $custom
+        } elseif (Test-Path (Join-Path $custom 'Mods\Workshop')) {
+            # They pasted the Tabletop Simulator root folder - accept that too
+            $workshop = Join-Path $custom 'Mods\Workshop'
+        } else {
+            Write-Host 'That folder does not exist or is not a Workshop folder - try again.' -ForegroundColor Yellow
+        }
+    }
+    Write-Host "Using: $workshop" -ForegroundColor Green
 }
 
 $modPath = Join-Path $workshop "$FileBase.json"
