@@ -22,12 +22,36 @@ $workshop = Join-Path $docs 'My Games\Tabletop Simulator\Mods\Workshop'
 if (-not (Test-Path $workshop)) {
     Write-Host 'Could not find the Tabletop Simulator Workshop folder at the default location:' -ForegroundColor Yellow
     Write-Host "  $workshop" -ForegroundColor Yellow
-    Write-Host ''
-    Write-Host 'If you moved your TTS data to a custom location, paste your Mods\Workshop'
-    Write-Host 'folder path below. Otherwise, make sure Tabletop Simulator has been run at'
-    Write-Host 'least once, then run this installer again.'
-    Write-Host ''
     $workshop = $null
+
+    # TTS's own log files record the mods path it actually uses, so a custom
+    # (relocated) data folder can usually be detected from there.
+    $logDir = Join-Path $env:USERPROFILE 'AppData\LocalLow\Berserk Games\Tabletop Simulator'
+    foreach ($log in @('Player.log', 'Player-prev.log')) {
+        if ($workshop) { break }
+        $logPath = Join-Path $logDir $log
+        if (-not (Test-Path $logPath)) { continue }
+        $m = Select-String -Path $logPath -Pattern '([A-Za-z]:[\\/][^"<>|:*?]*?[\\/]Mods)[\\/]' | Select-Object -First 1
+        if ($m) {
+            $modsPath = $m.Matches[0].Groups[1].Value -replace '[\\/]+', '\'
+            $candidate = Join-Path $modsPath 'Workshop'
+            if (Test-Path $candidate) {
+                Write-Host ''
+                Write-Host "Found a mods folder in Tabletop Simulator's log files:" -ForegroundColor Green
+                Write-Host "  $candidate" -ForegroundColor Green
+                $ans = Read-Host 'Install there? (y/n)'
+                if ($ans -match '^[Yy]') { $workshop = $candidate }
+            }
+        }
+    }
+
+    if (-not $workshop) {
+        Write-Host ''
+        Write-Host 'If you moved your TTS data to a custom location, paste your Mods\Workshop'
+        Write-Host 'folder path below. Otherwise, make sure Tabletop Simulator has been run at'
+        Write-Host 'least once, then run this installer again.'
+        Write-Host ''
+    }
     while (-not $workshop) {
         $custom = Read-Host 'Paste your Mods\Workshop folder path (or press Enter to cancel)'
         $custom = $custom.Trim().Trim('"')
